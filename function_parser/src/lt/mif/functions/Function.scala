@@ -45,7 +45,10 @@ trait Ops {
   class IntWithOps(val n: Int) {
     def %(other: IntWithOps) = new IntWithOps(n % other.n)
 
-    def >>(other: IntWithOps) = new IntWithOps(n >> other.n)
+    def >>(other: IntWithOps) = {
+      require(other.n >= 0, "Can not shift with negative")
+      new IntWithOps(n >> other.n)
+    }
   }
 
   object IntWithOps {
@@ -66,5 +69,8 @@ object Main {
     assert(Function("(rn7q: Int) => rn7q >> rn7q % 3")(10) == 5)
     assert(Try(Function("(uj9: Int) => 6 % uj9 >> 4")(0)).failed.get.isInstanceOf[ArithmeticException],
       "For undefined 0 input Arithmetic exception should be thrown")
+    assert(Function("(xe4b: Int) => 5 % 4 >> xe4b")(64) == 1)
+    assert(Function("(xe4b: Int) => 5 % 4 >> xe4b")(85) == 0)
+    assert(Try(Function("(xe4b: Int) => 5 % 4 >> xe4b")(-1)).failed.get.getMessage.contains("Can not shift with negative"))
   }
 }
