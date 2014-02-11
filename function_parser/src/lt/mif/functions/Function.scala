@@ -2,16 +2,17 @@ package lt.mif.functions
 
 import scala.util.Try
 import java.lang.ArithmeticException
-
+import scala.language.implicitConversions
 /**
- * Two argument function parser for http://guess.homedir.eu/ first assignment
+ * Two argument function parser for http://guess.homedir.eu/ first assignment.
+ * Parses function represented in text in Scala anonymous function format into {{{(Int => Int)}}} function
  *
  * @author Antanas Bastys
  */
 object Function extends Ops {
 
   val typePattern = "\\(.*:Int\\)".r
-  val operationPattern = s"$firstOp|$secOp".r
+  val operationPattern = (s"${%}|${>>}").r
 
   implicit final def intWithOps2Int(myInt: IntWithOps) = myInt.n
 
@@ -30,7 +31,7 @@ object Function extends Ops {
       .map(arg => (x: Int) => operandOrConst(x, arg)).toArray
     val op1 = operationPattern.findFirstIn(expression).get
 
-    if (op1 == firstOp) x => arg1(x) % arg2(x) >> arg3(x)
+    if (op1 == %) x => arg1(x) % arg2(x) >> arg3(x)
     else x => arg1(x) >> arg2(x) % arg3(x)
   }
 }
@@ -39,9 +40,14 @@ object Function extends Ops {
  * Trait with 2 operations that can be parsed
  */
 trait Ops {
-  val firstOp = "%"
-  val secOp = ">>"
+  val % = "%"
+  //this one is actually unused
+  val >> = ">>"
 
+  /**
+   * Implementation of [[lt.mif.functions.Ops.%]] and [[lt.mif.functions.Ops.>>]] operations
+   * @param n integer which is wrapped by this class
+   */
   class IntWithOps(val n: Int) {
     def %(other: IntWithOps) = new IntWithOps(n % other.n)
 
@@ -51,6 +57,7 @@ trait Ops {
     }
   }
 
+  /** Simple Factory for [[lt.mif.functions.Ops.IntWithOps]] **/
   object IntWithOps {
     def apply(n: Int) = new IntWithOps(n)
   }
@@ -62,6 +69,7 @@ trait Ops {
  */
 object Main {
   def main(args: Array[String]) {
+    println("Running tests...")
     assert(Try(Function(null)).isFailure, "Function with null String should not be allowed")
     assert(Try(Function("")).isFailure, "Function with empty String should not be allowed")
     assert(Function("(juu: Int) => 9 % juu >> 3")(5) == 0)
@@ -72,5 +80,6 @@ object Main {
     assert(Function("(xe4b: Int) => 5 % 4 >> xe4b")(64) == 1)
     assert(Function("(xe4b: Int) => 5 % 4 >> xe4b")(85) == 0)
     assert(Try(Function("(xe4b: Int) => 5 % 4 >> xe4b")(-1)).failed.get.getMessage.contains("Can not shift with negative"))
+    println("Tests success")
   }
 }
