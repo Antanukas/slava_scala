@@ -27,7 +27,7 @@ object Function extends Ops {
     val operandOrConst = (fOperand: Int, constOrVar: String) =>
       if (constOrVar == argumentName) IntWithOps(fOperand)
       else IntWithOps(Integer.parseInt(constOrVar))
-    val Array(arg1, arg2, arg3) = s"$argumentName|\\d".r.findAllIn(expression)
+    val Array(arg1, arg2, arg3) = s"$argumentName|\\d+".r.findAllIn(expression)
       .map(arg => (x: Int) => operandOrConst(x, arg)).toArray
     val op1 = operationPattern.findFirstIn(expression).get
 
@@ -80,6 +80,7 @@ object Main {
     assert(Function("(xe4b: Int) => 5 % 4 >> xe4b")(64) == 1)
     assert(Function("(xe4b: Int) => 5 % 4 >> xe4b")(85) == 0)
     assert(Try(Function("(xe4b: Int) => 5 % 4 >> xe4b")(-1)).failed.get.getMessage.contains("Can not shift with negative"))
+    assert(Function("(bGecx: Int) => bGecx >> 10 % 10")(0) == 0)
     println("Tests success")
   }
 }
